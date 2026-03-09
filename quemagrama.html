@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUEMAGRAMA — Destructor de Grasa por Acción</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060608;
+  --s1: #0e0e12;
+  --s2: #16161c;
+  --s3: #1e1e26;
+  --lime: #c8ff00;
+  --fire: #ff5500;
+  --blue: #00d4ff;
+  --white: #f4f4f0;
+  --muted: #4a4a5a;
+  --border: #1e1e28;
+  --red: #ff2244;
+  --green: #00ff88;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated background particles */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 600px 400px at 80% 20%, rgba(200,255,0,0.03) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 600px at 10% 80%, rgba(255,85,0,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; position: relative; z-index: 1; }
+
+/* HERO HEADER */
+.hero {
+  text-align: center;
+  margin-bottom: 36px;
+  padding: 32px 0 24px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--lime);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.hero-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(48px, 10vw, 88px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--white) 40%, var(--lime));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.hero-sub {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+/* MEGA COUNTER */
+.mega-counter {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--lime);
+  border-radius: 6px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.mega-counter::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--lime), transparent);
+  opacity: 0.3;
+}
+.grasa-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.grasa-pct {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(64px, 15vw, 110px);
+  line-height: 0.85;
+  color: var(--lime);
+  position: relative;
+  display: inline-block;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.grasa-pct sup {
+  font-size: 0.3em;
+  position: relative;
+  top: -0.7em;
+  color: var(--lime);
+  opacity: 0.7;
+}
+.grasa-detail {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.gd-item { text-align: center; }
+.gd-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fire);
+}
+.gd-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
+
+/* SESSION DELTA */
+.delta-flash {
+  position: absolute;
+  top: 12px; right: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.delta-flash.show { opacity: 1; }
+
+/* SECTIONS */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.section-tag {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 13px;
+  letter-spacing: 3px;
+  background: var(--fire);
+  color: #000;
+  padding: 3px 10px;
+  border-radius: 2px;
+}
+.section-tag.cool { background: var(--blue); }
+.section-tag.lime { background: var(--lime); }
+.section-tag.bad { background: var(--red); }
+.section-title-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: 1px;
+}
+.section-kcal {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ACTION CARDS */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.action-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.action-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--border);
+  transition: background 0.2s;
+}
+.action-card:hover { border-color: #333; transform: translateY(-1px); }
+.action-card.checked { 
+  background: rgba(200,255,0,0.05);
+  border-color: rgba(200,255,0,0.25);
+}
+.action-card.checked::before { background: var(--lime); }
+.action-card.negative {
+  background: rgba(255,34,68,0.04);
+  border-color: rgba(255,34,68,0.1);
+}
+.action-card.negative::before { background: var(--border); }
+.action-card.negative.checked {
+  background: rgba(0,255,136,0.05);
+  border-color: rgba(0,255,136,0.2);
+}
+.action-card.negative.checked::before { background: var(--green); }
+
+.ac-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.ac-emoji { font-size: 24px; min-width: 30px; line-height: 1; }
+.ac-name { font-size: 13px; font-weight: 700; line-height: 1.3; flex: 1; }
+.ac-qty {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--s2);
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.ac-bar-bg {
+  height: 4px;
+  background: var(--s3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.ac-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--lime);
+  transition: width 0.5s;
+}
+.action-card.negative .ac-bar-fill { background: var(--red); }
+.action-card.negative.checked .ac-bar-fill { background: var(--green); }
+
+.ac-bottom { display: flex; justify-content: space-between; align-items: center; }
+.ac-impact {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--lime);
+  font-weight: 700;
+}
+.action-card.negative .ac-impact { color: var(--red); }
+.action-card.negative.checked .ac-impact { color: var(--green); }
+.ac-kcal { font-size: 10px; color: var(--muted); }
+
+/* CHECK MARK */
+.ac-check {
+  position: absolute;
+  top: 10px; right: 12px;
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  transition: all 0.2s;
+  color: transparent;
+}
+.action-card.checked .ac-check {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: #000;
+}
+.action-card.negative.checked .ac-check {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+
+/* CUSTOM ACTION INPUT */
+.custom-section {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 28px;
+}
+.custom-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 14px; letter-spacing: 1px; }
+.custom-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.custom-input {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  flex: 1; min-width: 120px;
+}
+.custom-input:focus { outline: none; border-color: var(--lime); }
+.custom-input::placeholder { color: var(--muted); }
+.custom-select {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+}
+.custom-select:focus { outline: none; border-color: var(--lime); }
+.btn-add {
+  background: var(--lime);
+  color: #000;
+  border: none;
+  padding: 8px 18px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+.btn-add:hover { opacity: 0.85; }
+
+/* RESUMEN FINAL */
+.resumen {
+  background: var(--s1);
+  border: 1px solid rgba(200,255,0,0.2);
+  border-radius: 6px;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.resumen::before {
+  content: 'HOY';
+  position: absolute;
+  top: -10px; right: 20px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 80px;
+  color: rgba(200,255,0,0.04);
+  line-height: 1;
+}
+.res-title { font-family: 'Black Han Sans', sans-serif; font-size: 15px; letter-spacing: 3px; color: var(--lime); margin-bottom: 20px; }
+.res-grid { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.res-item { text-align: center; }
+.res-val { font-family: 'Black Han Sans', sans-serif; font-size: 36px; color: var(--white); }
+.res-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+.big-pct-drop {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(32px, 8vw, 56px);
+  background: linear-gradient(135deg, var(--fire), var(--lime));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.big-pct-label { font-size: 12px; color: var(--muted); letter-spacing: 2px; }
+
+.btn-reset {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 8px 20px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 16px;
+  transition: all 0.2s;
+}
+.btn-reset:hover { border-color: var(--red); color: var(--red); }
+
+/* MOTIVATIONAL FLASH */
+.moti {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--lime);
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 5px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  z-index: 999;
+  pointer-events: none;
+}
+.moti.show { transform: translateY(0); opacity: 1; }
+
+/* WEIGHT INPUT */
+.weight-row {
+  display: flex; align-items: center; gap: 12px; 
+  background: var(--s2); border-radius: 4px; padding: 10px 16px;
+  margin-bottom: 24px; border: 1px solid var(--border);
+}
+.weight-row label { font-size: 12px; color: var(--muted); white-space: nowrap; letter-spacing: 1px; text-transform: uppercase; }
+.weight-row input {
+  background: transparent; border: none; border-bottom: 1px solid var(--lime);
+  color: var(--lime); font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; font-weight: 700; width: 70px; text-align: center;
+  padding: 2px 4px;
+}
+.weight-row input:focus { outline: none; }
+.weight-row .hint { font-size: 11px; color: var(--muted); flex: 1; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.pulsing { animation: pulse 2s infinite; }
+
+@keyframes countUp {
+  from { transform: scale(1.2); }
+  to { transform: scale(1); }
+}
+.count-anim { animation: countUp 0.3s ease; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hero">
+    <div class="hero-label">▶ DESTRUCTOR DE GRASA CORPORAL · SERYÉO</div>
+    <div class="hero-title">QUEMAGRAMA</div>
+    <div class="hero-sub">Cada acción = impacto real en tu % de grasa corporal</div>
+  </div>
+
+  <!-- PESO INPUT -->
+  <div class="weight-row">
+    <label>Tu peso (kg)</label>
+    <input type="number" id="inp-peso" value="105" step="0.5" min="50" max="200" onchange="recalcularTodo()">
+    <div class="hint">→ Actualiza tu peso para que los cálculos sean exactos. La app recalcula todo automáticamente.</div>
+  </div>
+
+  <!-- MEGA COUNTER -->
+  <div class="mega-counter">
+    <div class="delta-flash" id="delta-flash"></div>
+    <div class="grasa-label">% GRASA CORPORAL ACTUAL ESTIMADO</div>
+    <div class="grasa-pct pulsing" id="grasa-display">28.0<sup>%</sup></div>
+    <div class="grasa-detail">
+      <div class="gd-item">
+        <div class="gd-val" id="kg-grasa">29.4</div>
+        <div class="gd-label">kg de grasa total</div>
+      </div>
+      <div class="gd-item">
+        <div class="gd-val" id="grasa-quemada-hoy" style="color:var(--lime)">0.000</div>
+        <div class="gd-label">kg grasa quemada hoy</div>
+      </div>
+      <div class="gd-item">
+        <div class="gd-val" id="kcal-total-hoy" style="color:var(--blue)">0</div>
+        <div class="gd-label">kcal netas quemadas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= EJERCICIOS ======= -->
+  <div class="section-head">
+    <div class="section-tag">🔥 QUEMA</div>
+    <div class="section-title-text">EJERCICIO EN GYM</div>
+  </div>
+  <div class="action-grid" id="grid-gym"></div>
+
+  <div class="section-head">
+    <div class="section-tag cool">⚡ BONUS</div>
+    <div class="section-title-text">MOVIMIENTO DEL DÍA</div>
+  </div>
+  <div class="action-grid" id="grid-mvmt"></div>
+
+  <div class="section-head">
+    <div class="section-tag lime">🥗 NUTRICIÓN</div>
+    <div class="section-title-text">BUENAS DECISIONES DE COMIDA</div>
+  </div>
+  <div class="action-grid" id="grid-nutri-good"></div>
+
+  <div class="section-head">
+    <div class="section-tag bad">⚠️ EVITAR</div>
+    <div class="section-title-text">LO QUE SABOTEA TU QUEMA</div>
+    <div class="section-kcal">Márcalo si LO EVITASTE ✓</div>
+  </div>
+  <div class="action-grid" id="grid-bad"></div>
+
+  <!-- CUSTOM -->
+  <div class="custom-section">
+    <div class="custom-title">➕ AGREGAR ACCIÓN PERSONALIZADA</div>
+    <div class="custom-row">
+      <input class="custom-input" id="cu-nombre" placeholder="Ej: Subí escaleras al trabajo" type="text">
+      <input class="custom-input" id="cu-cantidad" placeholder="Ej: 10 pisos" type="text" style="max-width:140px">
+      <input class="custom-input" id="cu-kcal" placeholder="kcal" type="number" min="1" style="max-width:90px">
+      <select class="custom-select" id="cu-tipo">
+        <option value="gym">💪 Gym</option>
+        <option value="mvmt">🚶 Movimiento</option>
+        <option value="nutri">🥗 Nutrición</option>
+        <option value="bad">⚠️ Evitar</option>
+      </select>
+      <button class="btn-add" onclick="agregarCustom()">+ AÑADIR</button>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="resumen">
+    <div class="res-title">▶ RESUMEN DEL DÍA</div>
+    <div class="res-grid">
+      <div class="res-item">
+        <div class="res-val" id="res-acciones">0</div>
+        <div class="res-label">Acciones completadas</div>
+      </div>
+      <div class="res-item">
+        <div class="res-val" id="res-kcal">0</div>
+        <div class="res-label">kcal quemadas</div>
+      </div>
+      <div class="res-item">
+        <div class="res-val" id="res-grasa-g">0.00</div>
+        <div class="res-label">gramos de grasa quemados</div>
+      </div>
+    </div>
+    <div class="big-pct-drop" id="res-pct-drop">−0.0000%</div>
+    <div class="big-pct-label">GRASA CORPORAL ELIMINADA HOY</div>
+    <br>
+    <div style="font-size:11px;color:var(--muted);max-width:400px;margin:0 auto;line-height:1.6">
+      Cada 0.01% son aprox. <span id="kcal-por-centi" style="color:var(--lime)">—</span> kcal.<br>
+      Mantén déficit diario de 500–700 kcal para llegar a 80kg.
+    </div>
+    <button class="btn-reset" onclick="resetearTodo()">↺ REINICIAR DÍA</button>
+  </div>
+
+</div>
+
+<!-- MOTIVATIONAL TOAST -->
+<div class="moti" id="moti">🔥 +0.000% QUEMADO</div>
+
+<script>
+// =======================================================
+// BASE DE DATOS DE ACCIONES
+// Impacto en kcal por unidad (si aplica) o total
+// =======================================================
+
+const acciones = {
+  gym: [
+    { emoji:'🏋️', nombre:'Press banca',         qty:'10 repeticiones', kcal: 8,   unidad:'set de 10 reps' },
+    { emoji:'🦵', nombre:'Sentadillas',          qty:'10 repeticiones', kcal: 10,  unidad:'set de 10 reps' },
+    { emoji:'💥', nombre:'Burpees',              qty:'10 reps',         kcal: 15,  unidad:'set de 10' },
+    { emoji:'🪂', nombre:'HIIT 1 minuto',        qty:'1 minuto',        kcal: 14,  unidad:'minuto' },
+    { emoji:'🔄', nombre:'Peso muerto',          qty:'10 repeticiones', kcal: 12,  unidad:'set de 10 reps' },
+    { emoji:'🦾', nombre:'Dominadas',            qty:'10 reps',         kcal: 9,   unidad:'set de 10 reps' },
+    { emoji:'🚴', nombre:'Bici estática',        qty:'10 minutos',      kcal: 85,  unidad:'10 minutos' },
+    { emoji:'🏃', nombre:'Caminadora',           qty:'10 minutos',      kcal: 90,  unidad:'10 minutos' },
+    { emoji:'⛹️', nombre:'Saltos a la comba',   qty:'100 saltos',      kcal: 12,  unidad:'100 saltos' },
+    { emoji:'🤸', nombre:'Flexiones',            qty:'10 reps',         kcal: 7,   unidad:'set de 10 reps' },
+    { emoji:'🌀', nombre:'Battle ropes',         qty:'30 segundos',     kcal: 10,  unidad:'30 segundos' },
+    { emoji:'🏊', nombre:'Plancha abdominal',    qty:'1 minuto',        kcal: 5,   unidad:'minuto' },
+  ],
+  mvmt: [
+    { emoji:'🚶', nombre:'Caminata',             qty:'1000 pasos',      kcal: 40,  unidad:'1000 pasos' },
+    { emoji:'🪜', nombre:'Subir escaleras',      qty:'5 pisos',         kcal: 10,  unidad:'5 pisos' },
+    { emoji:'🧹', nombre:'Quehaceres del hogar', qty:'30 minutos',      kcal: 80,  unidad:'30 minutos' },
+    { emoji:'🏡', nombre:'Trabajo de campo',     qty:'1 hora',          kcal: 180, unidad:'hora de campo' },
+    { emoji:'🧒', nombre:'Jugar con tu hija',    qty:'30 minutos',      kcal: 100, unidad:'30 minutos' },
+    { emoji:'🧘', nombre:'Estiramientos',        qty:'15 minutos',      kcal: 35,  unidad:'15 minutos' },
+    { emoji:'🚗', nombre:'Manejar (de pie)',     qty:'parado 1h',       kcal: 60,  unidad:'hora de pie' },
+  ],
+  'nutri-good': [
+    { emoji:'💧', nombre:'Beber agua',           qty:'500ml extra',     kcal: 15,  unidad:'500ml (termogénico leve)' },
+    { emoji:'🥦', nombre:'Comida sin carbos refinados', qty:'una comida', kcal: 120, unidad:'comida sin carbos refinados' },
+    { emoji:'🍗', nombre:'Comida alta en proteína', qty:'una comida alta proteína', kcal: 80, unidad:'efecto térmico digestión' },
+    { emoji:'☕', nombre:'Café negro (sin azúcar)', qty:'1 taza',        kcal: 30,  unidad:'copa (termogénico)' },
+    { emoji:'⏰', nombre:'Ayuno intermitente',    qty:'16 horas',        kcal: 200, unidad:'16h de ayuno' },
+    { emoji:'🥗', nombre:'Ensalada como almuerzo', qty:'en lugar de arroz', kcal: 250, unidad:'vs almuerzo estándar' },
+    { emoji:'🌙', nombre:'Cena antes de 8pm',    qty:'horario correcto', kcal: 80,  unidad:'reducción de almacenamiento nocturno' },
+  ],
+  bad: [
+    { emoji:'🥤', nombre:'EVITÉ la gaseosa',      qty:'1 litro menos',   kcal: 420, unidad:'litro de gaseosa evitado' },
+    { emoji:'🍪', nombre:'EVITÉ snack nocturno',  qty:'después de 9pm',  kcal: 300, unidad:'snack nocturno evitado' },
+    { emoji:'🍟', nombre:'EVITÉ comida chatarra', qty:'una vez',         kcal: 500, unidad:'comida chatarra evitada' },
+    { emoji:'😴', nombre:'Dormí 7+ horas',        qty:'sueño completo',  kcal: 100, unidad:'sueño reparador (cortisol bajo)' },
+    { emoji:'🪑', nombre:'Me paré cada hora',     qty:'del escritorio',  kcal: 60,  unidad:'vs sedentarismo continuo' },
+    { emoji:'🧁', nombre:'EVITÉ azúcar en desayuno', qty:'no azúcar AM', kcal: 180, unidad:'azúcar eliminada en desayuno' },
+  ]
+};
+
+// =======================================================
+// ESTADO
+// =======================================================
+let estado = {
+  peso: 105,
+  checked: {},
+  custom: []
+};
+try {
+  const s = localStorage.getItem('quemagrama');
+  if (s) estado = { ...estado, ...JSON.parse(s) };
+} catch(e){}
+
+function guardarEstado() {
+  try { localStorage.setItem('quemagrama', JSON.stringify(estado)); } catch(e) {}
+}
+
+// =======================================================
+// CÁLCULO BASE
+// =======================================================
+function calcularGrasaBase(peso) {
+  // Fórmula estimada hombres adultos activos con BMI
+  const altura = 1.765;
+  const bmi = peso / (altura * altura);
+  return Math.max(8, 1.20 * bmi + 0.23 * 30 - 16.2);
+}
+
+function calcularImpactoPct(kcal, peso) {
+  // 1 kg grasa ≈ 7700 kcal
+  // grasa total (g) = peso * %grasa
+  const pctGrasaActual = calcularGrasaBase(peso) / 100;
+  const grasaTotalG = peso * 1000 * pctGrasaActual;
+  // kcal → gramos grasa quemados
+  const gramasQuemados = (kcal / 7700) * 1000;
+  // cambio en % grasa
+  const deltaPct = (gramasQuemados / grasaTotalG) * 100;
+  return { deltaPct, gramasQuemados };
+}
+
+// =======================================================
+// RENDER ACCIONES
+// =======================================================
+function renderGrid(containerId, categoria, items) {
+  const maxKcal = Math.max(...items.map(a => a.kcal));
+  const container = document.getElementById(containerId);
+  const isNeg = categoria === 'bad';
+
+  container.innerHTML = items.map((accion, idx) => {
+    const id = `${categoria}-${idx}`;
+    const checked = estado.checked[id] || false;
+    const barPct = Math.round((accion.kcal / maxKcal) * 100);
+    const { deltaPct } = calcularImpactoPct(accion.kcal, estado.peso);
+
+    return `
+    <div class="action-card ${isNeg ? 'negative' : ''} ${checked ? 'checked' : ''}" 
+         id="card-${id}" onclick="toggleAccion('${id}', ${accion.kcal}, '${accion.nombre}')">
+      <div class="ac-check">✓</div>
+      <div class="ac-top">
+        <div class="ac-emoji">${accion.emoji}</div>
+        <div>
+          <div class="ac-name">${accion.nombre}</div>
+          <div class="ac-qty">${accion.qty}</div>
+        </div>
+      </div>
+      <div class="ac-bar-bg">
+        <div class="ac-bar-fill" style="width:${barPct}%"></div>
+      </div>
+      <div class="ac-bottom">
+        <div class="ac-impact">−${deltaPct.toFixed(4)}% grasa</div>
+        <div class="ac-kcal">${accion.kcal} kcal</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTodo() {
+  renderGrid('grid-gym', 'gym', [...acciones.gym, ...estado.custom.filter(c=>c.cat==='gym')]);
+  renderGrid('grid-mvmt', 'mvmt', [...acciones.mvmt, ...estado.custom.filter(c=>c.cat==='mvmt')]);
+  renderGrid('grid-nutri-good', 'nutri-good', [...acciones['nutri-good'], ...estado.custom.filter(c=>c.cat==='nutri-good')]);
+  renderGrid('grid-bad', 'bad', [...acciones.bad, ...estado.custom.filter(c=>c.cat==='bad')]);
+  actualizarContador();
+}
+
+// =======================================================
+// TOGGLE ACCIÓN
+// =======================================================
+let lastPct = 0;
+function toggleAccion(id, kcal, nombre) {
+  estado.checked[id] = !estado.checked[id];
+  const card = document.getElementById('card-' + id);
+  const isNeg = id.startsWith('bad');
+  if (estado.checked[id]) {
+    card.classList.add('checked');
+  } else {
+    card.classList.remove('checked');
+  }
+  guardarEstado();
+  actualizarContador(kcal, nombre, estado.checked[id]);
+}
+
+// =======================================================
+// ACTUALIZAR CONTADOR MEGA
+// =======================================================
+function actualizarContador(lastKcal, lastNombre, added) {
+  // Sumar todo lo checkeado
+  let totalKcal = 0;
+  let totalAcciones = 0;
+
+  const allActions = {};
+  ['gym','mvmt','nutri-good','bad'].forEach(cat => {
+    const list = cat === 'nutri-good' ? [...acciones['nutri-good'], ...estado.custom.filter(c=>c.cat==='nutri-good')]
+      : cat === 'gym' ? [...acciones.gym, ...estado.custom.filter(c=>c.cat==='gym')]
+      : cat === 'mvmt' ? [...acciones.mvmt, ...estado.custom.filter(c=>c.cat==='mvmt')]
+      : [...acciones.bad, ...estado.custom.filter(c=>c.cat==='bad')];
+    list.forEach((a, idx) => {
+      allActions[`${cat}-${idx}`] = a.kcal;
+    });
+  });
+
+  for (const [id, kcal] of Object.entries(allActions)) {
+    if (estado.checked[id]) {
+      totalKcal += kcal;
+      totalAcciones++;
+    }
+  }
+
+  const peso = estado.peso;
+  const grasaBasePct = calcularGrasaBase(peso);
+  const { deltaPct, gramasQuemados } = calcularImpactoPct(totalKcal, peso);
+  const grasaActualPct = Math.max(5, grasaBasePct - deltaPct);
+  const kgGrasa = ((grasaActualPct / 100) * peso).toFixed(1);
+
+  // Update displays
+  const display = document.getElementById('grasa-display');
+  display.innerHTML = grasaActualPct.toFixed(3) + '<sup>%</sup>';
+  display.classList.remove('count-anim');
+  void display.offsetWidth;
+  display.classList.add('count-anim');
+
+  document.getElementById('kg-grasa').textContent = kgGrasa;
+  document.getElementById('grasa-quemada-hoy').textContent = (gramasQuemados / 1000).toFixed(4);
+  document.getElementById('kcal-total-hoy').textContent = totalKcal;
+
+  // Resumen
+  document.getElementById('res-acciones').textContent = totalAcciones;
+  document.getElementById('res-kcal').textContent = totalKcal;
+  document.getElementById('res-grasa-g').textContent = (gramasQuemados / 1000 * 1000).toFixed(1) + 'g';
+  document.getElementById('res-pct-drop').textContent = '−' + deltaPct.toFixed(4) + '%';
+
+  // kcal por 0.01%
+  const grasaTotalG = peso * 1000 * (grasaBasePct / 100);
+  const kcalPorCenti = Math.round((grasaTotalG * 0.0001) * 7.7);
+  document.getElementById('kcal-por-centi').textContent = kcalPorCenti + ' kcal';
+
+  // Top counter delta flash
+  if (lastKcal && added) {
+    const d = document.getElementById('delta-flash');
+    const { deltaPct: dp } = calcularImpactoPct(lastKcal, peso);
+    d.textContent = `+${lastKcal} kcal → −${dp.toFixed(4)}% grasa`;
+    d.classList.add('show');
+    setTimeout(() => d.classList.remove('show'), 2800);
+    showMoti(`−${dp.toFixed(4)}% GRASA 🔥`);
+  }
+
+  lastPct = deltaPct;
+}
+
+// =======================================================
+// TOAST
+// =======================================================
+let motiTimeout;
+function showMoti(txt) {
+  const el = document.getElementById('moti');
+  el.textContent = txt;
+  el.classList.add('show');
+  clearTimeout(motiTimeout);
+  motiTimeout = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// =======================================================
+// CUSTOM ACTION
+// =======================================================
+function agregarCustom() {
+  const nombre = document.getElementById('cu-nombre').value.trim();
+  const cantidad = document.getElementById('cu-cantidad').value.trim();
+  const kcal = parseInt(document.getElementById('cu-kcal').value);
+  const tipo = document.getElementById('cu-tipo').value;
+  if (!nombre || !kcal || kcal < 1) { alert('Completa nombre y calorías'); return; }
+  const cat = tipo === '💪 Gym' ? 'gym' : tipo === '🚶 Movimiento' ? 'mvmt' : tipo === '🥗 Nutrición' ? 'nutri-good' : 'bad';
+  estado.custom.push({ emoji:'⭐', nombre, qty: cantidad || `${kcal} kcal`, kcal, cat, unidad: cantidad || 'vez' });
+  document.getElementById('cu-nombre').value = '';
+  document.getElementById('cu-cantidad').value = '';
+  document.getElementById('cu-kcal').value = '';
+  guardarEstado();
+  renderTodo();
+}
+
+// =======================================================
+// RESET
+// =======================================================
+function resetearTodo() {
+  if (!confirm('¿Reiniciar el día? Los checks se borran.')) return;
+  estado.checked = {};
+  guardarEstado();
+  renderTodo();
+}
+
+// =======================================================
+// RECALCULAR CON NUEVO PESO
+// =======================================================
+function recalcularTodo() {
+  const p = parseFloat(document.getElementById('inp-peso').value);
+  if (p >= 50 && p <= 200) {
+    estado.peso = p;
+    guardarEstado();
+    renderTodo();
+  }
+}
+
+// =======================================================
+// INIT
+// =======================================================
+document.getElementById('inp-peso').value = estado.peso;
+renderTodo();
+</script>
+</body>
+</html>
